@@ -11,23 +11,9 @@ trap finish EXIT
 cd $(realpath $(dirname $0)/..)
 set -eux
 
-mkdir -p ~/.vnc
-if [ ! -e ~/.vnc/passwdfile ]; then
-    set +x
-    echo $(head /dev/urandom | tr -dc a-z0-9 | head -c 32) > ~/.vnc/passwdfile
-    set -x
-fi
-
-Xvfb &
 export DISPLAY=:0
 export EGL_PLATFORM=x11
 
-until [ -e /tmp/.X11-unix/X0 ]; do sleep 1; done
-: FIXME: remove this sleep
-sleep 1
-x11vnc -usepw -ncache 10 -forever -bg
-
-fvwm &
 if ! systemctl is-system-running --wait; then
     systemctl status --no-pager -l anbox-container-manager
     journalctl -u anbox-container-manager --no-pager -l
@@ -35,7 +21,8 @@ if ! systemctl is-system-running --wait; then
 fi
 systemctl status --no-pager -l anbox-container-manager
 
-anbox session-manager &
+xpra start --exec-wrapper="/usr/bin/vglrun" --start="anbox session-manager" --bind-tcp=0.0.0.0:14500 &
+
 until anbox wait-ready; do sleep 1; done
 anbox launch --package=org.anbox.appmgr --component=org.anbox.appmgr.AppViewActivity
 

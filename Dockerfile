@@ -89,9 +89,10 @@ RUN apt-get update && \
 # systemd
   dbus dbus-user-session systemd systemd-container systemd-sysv \
 # X11
-  xvfb x11vnc \
+  libxv1 libglu1-mesa xpra \
+  python3-dbus python3-uinput python3-pyinotify python3-willow \
 # WM
-  fvwm xterm \
+  xterm \
 # debug utilities
   busybox figlet file strace less && \
 # ...
@@ -99,6 +100,9 @@ RUN apt-get update && \
   curl -L -o /docker-entrypoint.sh https://raw.githubusercontent.com/AkihiroSuda/containerized-systemd/6ced78a9df65c13399ef1ce41c0bedc194d7cff6/docker-entrypoint.sh && \
   chmod +x /docker-entrypoint.sh
 # apk-pre.d is for pre-installed apks, /apk.d for the mountpoint for user-specific apks
+ADD virtualgl_2.6.5_amd64.deb /tmp/virtualgl_2.6.5_amd64.deb
+RUN dpkg -i /tmp/virtualgl_2.6.5_amd64.deb && \
+    rm /tmp/virtualgl_2.6.5_amd64.deb
 RUN mkdir -p /apk-pre.d /apk.d && \
   curl -L -o /apk-pre.d/FDroid.apk https://f-droid.org/FDroid.apk && \
   curl -L -o /apk-pre.d/firefox.apk https://ftp.mozilla.org/pub/mobile/releases/68.9.0/android-x86_64/en-US/fennec-68.9.0.en-US.android-x86_64.apk && \
